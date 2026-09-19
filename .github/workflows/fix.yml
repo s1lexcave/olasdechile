@@ -1,0 +1,19 @@
+name: Fix D1 migration
+on: workflow_dispatch
+jobs:
+  fix:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 22 }
+      - run: npm install
+      - env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+        run: |
+          ACCOUNT_ID=$(node -e "fetch('https://api.cloudflare.com/client/v4/accounts',{headers:{Authorization:'Bearer '+process.env.CLOUDFLARE_API_TOKEN}}).then(r=>r.json()).then(j=>process.stdout.write(j.result[0].id))")
+          export CLOUDFLARE_ACCOUNT_ID="$ACCOUNT_ID"
+          ID=$(node -e "fetch('https://api.cloudflare.com/client/v4/accounts/'+process.env.CLOUDFLARE_ACCOUNT_ID+'/d1/database',{headers:{Authorization:'Bearer '+process.env.CLOUDFLARE_API_TOKEN}}).then(r=>r.json()).then(j=>process.stdout.write(j.result.find(x=>x.name==='olasdechile-db').uuid))")
+          sed -i -E "s/[0-9a-f]{8}-[0-9a-f-]{27,}/$ID/" wrangler.jsonc
+          npx wrangler d1 execute olasdechile-db --remote --file=migrations/migrations/0001_init.sql -y
+          npx wrangler deploy
