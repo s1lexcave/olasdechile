@@ -1,13 +1,13 @@
 {
   "$schema": "node_modules/wrangler/config-schema.json",
   "name": "olasdechile",
-  "main": "src/index.ts",
+  "main": "src/src/index.ts",
   "compatibility_date": "2026-09-19",
   "observability": { "enabled": true },
   "d1_databases": [{
     "binding": "DB",
     "database_name": "olasdechile-db",
-    "database_id": "REPLACE_WITH_D1_DATABASE_ID",
-    "migrations_dir": "migrations"
+    "database_id": "91af56fe-23c2-41e0-aaf4-c9f0dbdeee56",
+    "migrations_dir": "migrations/migrations"
   }]
 }
