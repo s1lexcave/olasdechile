@@ -16,7 +16,9 @@ jobs:
           export CLOUDFLARE_ACCOUNT_ID="$ACCOUNT_ID"
           set +e; OUT=$(npx wrangler d1 create olasdechile-db --json 2>&1); set -e
           ID=$(printf '%s' "$OUT"|grep -Eo '[0-9a-f]{8}-[0-9a-f-]{27,}'|head -1)
-          if [ -z "$ID" ]; then ID=$(node -e "fetch('https://api.cloudflare.com/client/v4/accounts/'+process.env.CLOUDFLARE_ACCOUNT_ID+'/d1/database',{headers:{Authorization:'Bearer '+process.env.CLOUDFLARE_API_TOKEN}}).then(r=>r.json()).then(j=>process.stdout.write(j.result.find(x=>x.name==='olasdechile-db').uuid))"); fi
+          if [ -z "$ID" ]; then
+            ID=$(node -e "const h={Authorization:'Bearer '+process.env.CLOUDFLARE_API_TOKEN,'Content-Type':'application/json'};const u='https://api.cloudflare.com/client/v4/accounts/'+process.env.CLOUDFLARE_ACCOUNT_ID+'/d1/database';fetch(u,{headers:h}).then(r=>r.json()).then(async j=>{let d=(j.result||[]).find(x=>x.name==='olasdechile-db');if(!d){j=await fetch(u,{method:'POST',headers:h,body:JSON.stringify({name:'olasdechile-db'})}).then(r=>r.json());d=j.result}if(!d||!d.uuid)throw Error(JSON.stringify(j.errors));process.stdout.write(d.uuid)})")
+          fi
           sed -i -E "s/[0-9a-f]{8}-[0-9a-f-]{27,}/$ID/" wrangler.jsonc
           npx wrangler d1 migrations apply olasdechile-db --remote
           npx wrangler deploy
