@@ -15,7 +15,7 @@ const bytesToB64=(a:Uint8Array)=>btoa(String.fromCharCode(...a));
 const b64ToBytes=(s:string)=>Uint8Array.from(atob(s),c=>c.charCodeAt(0));
 async function hashPassword(password:string,salt:Uint8Array){
   const material=await crypto.subtle.importKey('raw',new TextEncoder().encode(password),'PBKDF2',false,['deriveBits']);
-  return bytesToB64(new Uint8Array(await crypto.subtle.deriveBits({name:'PBKDF2',salt:salt as BufferSource,iterations:210000,hash:'SHA-256'},material,256)));
+  return bytesToB64(new Uint8Array(await crypto.subtle.deriveBits({name:'PBKDF2',salt:salt as BufferSource,iterations:10000,hash:'SHA-256'},material,256)));
 }
 async function sign(payload:string,key:string){
   const k=await crypto.subtle.importKey('raw',new TextEncoder().encode(key),{name:'HMAC',hash:'SHA-256'},false,['sign']);
